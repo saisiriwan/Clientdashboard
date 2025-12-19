@@ -56,21 +56,6 @@ const todayTasks = [
     status: 'pending',
     priority: 'high'
   },
-  {
-    id: 2,
-    title: 'ดื่มน้ำ 2 ลิตร',
-    type: 'habit',
-    status: 'in-progress',
-    progress: 60,
-    priority: 'medium'
-  },
-  {
-    id: 3,
-    title: 'ทานโปรตีน 150g',
-    type: 'nutrition',
-    status: 'completed',
-    priority: 'medium'
-  },
 ];
 
 // Mock data - การแจ้งเตือน

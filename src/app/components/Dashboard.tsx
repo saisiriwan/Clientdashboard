@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
+import { Header } from './Header';
 import { ProfilePage } from './ProfilePage';
 import { ProgressView } from './ProgressView';
 import { SessionCardsView } from './SessionCardsView';
 import { ScheduleView } from './ScheduleView';
 import { DashboardOverview } from './DashboardOverview';
-import { SettingsView } from './SettingsView';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -164,32 +164,34 @@ export function Dashboard({ onLogout }: DashboardProps) {
   const [activeTab, setActiveTab] = useState('profile');
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Sidebar */}
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* Main Content - ปรับ margin และ padding ให้ responsive */}
-      <main className="flex-1 lg:ml-56 p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
-        {activeTab === 'feed' && (
-          <DashboardOverview schedules={demoSchedules} />
-        )}
+      {/* Main Content Wrapper */}
+      <div className="flex-1 lg:ml-56 flex flex-col">
+        {/* Header */}
+        <Header onLogout={onLogout} />
 
-        {activeTab === 'schedule' && (
-          <ScheduleView schedules={demoSchedules} />
-        )}
+        {/* Main Content - ปรับ padding ให้ responsive */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
+          {activeTab === 'feed' && (
+            <DashboardOverview schedules={demoSchedules} />
+          )}
 
-        {activeTab === 'exercises' && (
-          <ProgressView workouts={demoWorkouts} />
-        )}
+          {activeTab === 'schedule' && (
+            <ScheduleView schedules={demoSchedules} />
+          )}
 
-        {activeTab === 'profile' && (
-          <SessionCardsView cards={demoSessionCards} />
-        )}
+          {activeTab === 'exercises' && (
+            <ProgressView workouts={demoWorkouts} />
+          )}
 
-        {activeTab === 'settings' && (
-          <SettingsView />
-        )}
-      </main>
+          {activeTab === 'profile' && (
+            <SessionCardsView cards={demoSessionCards} />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

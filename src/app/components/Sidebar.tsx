@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Calendar, TrendingUp, User, Settings, Dumbbell } from 'lucide-react';
+import { Home, Calendar, TrendingUp, User, Dumbbell } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface SidebarProps {
@@ -13,7 +13,6 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     { id: 'schedule', icon: Calendar, label: 'ตารางนัดหมาย' },
     { id: 'exercises', icon: Dumbbell, label: 'ความก้าวหน้า' },
     { id: 'profile', icon: User, label: 'สรุปผลการฝึก' },
-    { id: 'settings', icon: Settings, label: 'ตั้งค่า' },
   ];
 
   return (
