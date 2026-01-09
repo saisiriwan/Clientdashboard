@@ -62,7 +62,9 @@
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
   --border: #334155;
-  --input: #334155;
+  --input: transparent;
+  --input-background: #334155;
+  --switch-background: #475569;
   --ring: #FF6B35;
   --font-weight-medium: 500;
   --font-weight-normal: 400;
@@ -181,5 +183,145 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-normal);
     line-height: 1.5;
+  }
+
+  /* Custom Scrollbar Styling - Professional Fitness Theme */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--muted);
+    border-radius: 1rem;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 1rem;
+    transition: background 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #ff8555;
+  }
+
+  /* Firefox Scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) var(--muted);
+  }
+}
+
+/* Professional Fitness Theme - Utility Classes */
+@layer components {
+  /* Glass Morphism Effects */
+  .glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-dark {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Smooth Transitions - Apply to interactive elements */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-bounce {
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  /* High Contrast Card */
+  .card-fitness {
+    @apply bg-card border border-border rounded-lg shadow-sm;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-fitness:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(255, 107, 53, 0.15);
+  }
+
+  /* Accent Gradient */
+  .gradient-accent {
+    background: linear-gradient(135deg, #FF6B35 0%, #ff8555 100%);
+  }
+
+  /* Primary Gradient */
+  .gradient-primary {
+    background: linear-gradient(135deg, #002140 0%, #003A6B 100%);
+  }
+
+  /* Wave Animation */
+  @keyframes wave {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-wave {
+    animation: wave 2s ease-in-out infinite;
+  }
+
+  /* Pulse Accent */
+  @keyframes pulse-accent {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.8;
+      transform: scale(1.05);
+    }
+  }
+
+  .animate-pulse-accent {
+    animation: pulse-accent 2s ease-in-out infinite;
+  }
+
+  /* Focus States - Accessible */
+  .focus-fitness {
+    @apply focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-background;
+    transition: all 0.2s ease;
+  }
+
+  /* Energy Button - Bright Orange with Hover Effect */
+  .btn-energy {
+    @apply bg-accent text-accent-foreground font-medium px-6 py-3 rounded-lg;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 14px rgba(255, 107, 53, 0.3);
+  }
+
+  .btn-energy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+    background: #ff8555;
+  }
+
+  .btn-energy:active {
+    transform: translateY(0);
+  }
+
+  /* Professional Button - Dark Blue */
+  .btn-professional {
+    @apply bg-primary text-primary-foreground font-medium px-6 py-3 rounded-lg;
+    transition: all 0.3s ease;
+  }
+
+  .btn-professional:hover {
+    background: #003A6B;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 33, 64, 0.3);
   }
 }
