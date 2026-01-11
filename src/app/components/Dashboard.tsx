@@ -5,7 +5,6 @@ import { ProfilePage } from './ProfilePage';
 import { ProgressView } from './ProgressView';
 import { SessionCardsView } from './SessionCardsView';
 import { ScheduleView } from './ScheduleView';
-import { DashboardOverview } from './DashboardOverview';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -161,7 +160,7 @@ const demoSessionCards = [
 ];
 
 export function Dashboard({ onLogout }: DashboardProps) {
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('schedule');
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -175,10 +174,6 @@ export function Dashboard({ onLogout }: DashboardProps) {
 
         {/* Main Content - ปรับ padding ให้ responsive */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
-          {activeTab === 'feed' && (
-            <DashboardOverview schedules={demoSchedules} />
-          )}
-
           {activeTab === 'schedule' && (
             <ScheduleView schedules={demoSchedules} />
           )}
