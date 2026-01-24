@@ -64,31 +64,40 @@ export function DemoData({ userId, accessToken, onDataCreated }: DemoDataProps) 
           userId,
           date: '2025-01-15',
           exercises: [
-            { name: 'Squat', sets: 3, reps: 10, weight: 60 },
-            { name: 'Bench Press', sets: 3, reps: 8, weight: 50 },
-            { name: 'Deadlift', sets: 3, reps: 6, weight: 80 }
+            { name: 'Squat', type: 'weight_training', sets: 3, reps: 10, weight: 60, isBodyweight: false },
+            { name: 'Bench Press', type: 'weight_training', sets: 3, reps: 8, weight: 50, isBodyweight: false },
+            { name: 'Deadlift', type: 'weight_training', sets: 3, reps: 6, weight: 80, isBodyweight: false }
           ],
-          notes: 'ฟอร์มดีมาก! พยายามรักษาจังหวะการหายใจ'
+          notes: 'เวทเทรนนิ่งวันนี้ดีมาก! ฟอร์มดีขึ้นเรื่อยๆ พัฒนาการชัดเจน'
+        },
+        {
+          userId,
+          date: '2025-01-16',
+          exercises: [
+            { name: 'Running', type: 'cardio', distance: 5.0, duration: 28, pace: 5.6, calories: 400 },
+            { name: 'Cycling', type: 'cardio', distance: 15, duration: 35, speed: 25.7, calories: 375 }
+          ],
+          notes: 'คาร์ดิโอวันนี้เยี่ยม! ความอดทนดีขึ้นมาก จังหวะการวิ่งสม่ำเสมอ'
         },
         {
           userId,
           date: '2025-01-17',
           exercises: [
-            { name: 'Pull-ups', sets: 4, reps: 8, weight: 0 },
-            { name: 'Dips', sets: 3, reps: 12, weight: 0 },
-            { name: 'Plank', sets: 3, reps: 1, weight: 0 }
+            { name: 'Push-ups', type: 'weight_training', sets: 4, reps: 20, totalReps: 80, isBodyweight: true },
+            { name: 'Pull-ups', type: 'weight_training', sets: 4, reps: 8, totalReps: 32, isBodyweight: true },
+            { name: 'Plank', type: 'weight_training', sets: 3, duration: 90, totalDuration: 270, isBodyweight: true }
           ],
-          notes: 'ความแข็งแรงเพิ่มขึ้นเห็นได้ชัด!'
+          notes: 'เวทเทรนนิ่งด้วยน้ำหนักตัว - ความแข็งแรงเพิ่มขึ้นเห็นได้ชัด!'
         },
         {
           userId,
           date: '2025-01-18',
           exercises: [
-            { name: 'Lunges', sets: 3, reps: 12, weight: 20 },
-            { name: 'Push-ups', sets: 4, reps: 15, weight: 0 },
-            { name: 'Burpees', sets: 3, reps: 10, weight: 0 }
+            { name: 'Yoga Flow', type: 'flexibility', duration: 30, sets: 1, totalDuration: 30 },
+            { name: 'Static Stretching', type: 'flexibility', duration: 15, sets: 1, totalDuration: 15 },
+            { name: 'Foam Rolling', type: 'flexibility', duration: 10, sets: 1, totalDuration: 10 }
           ],
-          notes: 'พลังงานดีมาก ทำได้เต็มที่'
+          notes: 'เฟล็กซ์วันนี้ดีมาก! ความยืดหยุ่นดีขึ้น ช่วยฟื้นฟูร่างกายได้ดี'
         }
       ];
 
@@ -196,7 +205,7 @@ export function DemoData({ userId, accessToken, onDataCreated }: DemoDataProps) 
           <p className="font-medium">ข้อมูลที่จะสร้าง:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>ตารางนัดหมาย 3 รายการ</li>
-            <li>ประวัติการฝึก 3 เซสชัน</li>
+            <li>ประวัติการฝึก 4 เซสชัน (💪 เวทเทรนนิ่ง, 🏃 คาร์ดิโอ, 🧘 เฟล็กซ์)</li>
             <li>การ์ดสรุปผล 3 ใบ</li>
           </ul>
         </div>

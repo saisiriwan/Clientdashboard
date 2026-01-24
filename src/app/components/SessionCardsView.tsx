@@ -7,8 +7,14 @@ import {
   MessageSquare,
   Target,
   TrendingUp,
+  Dumbbell,
+  Zap,
+  Activity,
+  Timer,
+  Flame,
 } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { ExerciseCard } from "./ExerciseCard";
 
 interface SessionCardsViewProps {
   cards: any[];

@@ -240,14 +240,6 @@ export interface SessionCard {
   updatedAt: string;
 }
 
-export interface Exercise {
-  id: number;
-  name: string;
-  category?: string;
-  sets: ExerciseSet[];
-  notes?: string;
-}
-
 export interface ExerciseSet {
   setNumber: number;
   reps?: number;
@@ -255,6 +247,42 @@ export interface ExerciseSet {
   duration?: number;
   rest?: number;
   completed: boolean;
+  // เพิ่มข้อมูลสำหรับ Cardio และ Duration-based exercises
+  distance?: number; // สำหรับ Running, Cycling (เมตร)
+  pace?: number; // สำหรับ Running (นาที/กิโลเมตร)
+  speed?: number; // สำหรับ Cycling (กม./ชม.)
+  calories?: number; // แคลอรี่ที่เผาผลาญ
+  heartRate?: number; // อัตราการเต้นหัวใจ
+  notes?: string; // หมายเหตุเพิ่มเติม
+}
+
+// เพิ่ม Exercise Type Enum - ปรับให้ตรงกับมาตรฐานการฝึก
+export type ExerciseType = 
+  | 'weight_training' // เวทเทรนนิ่ง (Weight Training / Strength Training)
+  | 'cardio' // คาร์ดิโอ (Cardio / Aerobic Exercise)
+  | 'flexibility'; // เฟล็กซ์ (Flexibility / Mobility)
+
+export interface ExerciseMetadata {
+  type: ExerciseType;
+  primaryMetric: 'weight' | 'distance' | 'duration' | 'reps'; // ตัวชี้วัดหลัก
+  unit?: string; // หน่วยวัด (kg, km, นาที, ครั้ง)
+  targetZone?: 'strength' | 'endurance' | 'cardio' | 'flexibility'; // โซนเป้าหมาย
+  isBodyweight?: boolean; // true ถ้าเป็นท่าใช้น้ำหนักตัว (สำหรับ weight_training)
+  intensity?: 'low' | 'medium' | 'high'; // ระดับความเข้มข้น
+  recommendedFrequency?: string; // ความถี่ที่แนะนำ เช่น "2-4 ครั้ง/สัปดาห์"
+}
+
+// ปรับ Exercise interface
+export interface Exercise {
+  id: number;
+  name: string;
+  category?: string;
+  type: ExerciseType; // เพิ่ม type
+  metadata?: ExerciseMetadata; // เพิ่ม metadata
+  sets: ExerciseSet[];
+  notes?: string;
+  totalVolume?: number; // ปริมาณรวม (weight × reps × sets หรือ total distance/duration)
+  personalBest?: number; // สถิติส่วนตัว
 }
 
 // Metrics
