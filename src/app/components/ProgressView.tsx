@@ -7,6 +7,7 @@ import { th } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ExerciseType } from '@/api/types';
 
 interface ProgressViewProps {
@@ -618,25 +619,36 @@ export function ProgressView({ workouts }: ProgressViewProps) {
             </CardHeader>
             <CardContent>
               {/* Exercise Selector - READ-ONLY: เลือกดูกราฟต่างๆ เท่านั้น */}
-              <div className="flex flex-wrap gap-2 mb-6">
-                {exerciseHistoryData.map((exercise) => {
-                  const Icon = exercise.icon;
-                  const config = getTypeConfig(exercise.type);
-                  return (
-                    <button
-                      key={exercise.exercise}
-                      onClick={() => setSelectedExercise(exercise.exercise)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-                        selectedExercise === exercise.exercise
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-accent text-accent-foreground hover:bg-accent/70'
-                      }`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      {exercise.exercise}
-                    </button>
-                  );
-                })}
+              <div className="mb-6">
+                <label htmlFor="exercise-select" className="block text-sm font-medium mb-2">
+                  เลือกท่าออกกำลังกาย
+                </label>
+                <Select value={selectedExercise} onValueChange={setSelectedExercise}>
+                  <SelectTrigger id="exercise-select" className="w-full md:w-96">
+                    <SelectValue placeholder="เลือกท่าออกกำลังกาย" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {exerciseHistoryData.map((exercise) => {
+                      const Icon = exercise.icon;
+                      const config = getTypeConfig(exercise.type);
+                      return (
+                        <SelectItem 
+                          key={exercise.exercise} 
+                          value={exercise.exercise}
+                          className="cursor-pointer"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Icon className={`w-4 h-4 ${config.color}`} />
+                            <span>{exercise.exercise}</span>
+                            <Badge className={`${config.badgeColor} text-xs ml-2`}>
+                              {config.label}
+                            </Badge>
+                          </div>
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Progress Badge และ Type Info */}

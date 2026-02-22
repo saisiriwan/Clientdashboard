@@ -21,18 +21,76 @@ const demoSchedules = [
     trainer: 'โค้ชบเนศ',
     trainerPhone: '081-234-5678',
     location: 'ห้องฟิตเนส A',
-    status: 'confirmed'
+    status: 'confirmed',
+    exercises: [
+      {
+        id: 1,
+        name: 'Seated Cable Row',
+        type: 'Compound' as const,
+        sets: [
+          { set: 1, reps: 10, weight: 40, rpe: 7, completed: true },
+          { set: 2, reps: 10, weight: 45, rpe: 8, completed: true },
+          { set: 3, reps: 8, weight: 50, rpe: 9, completed: false }
+        ],
+        note: 'มุ่งเน้นการบีบหลัง ลงช้า ขึ้นเร็ว'
+      },
+      {
+        id: 2,
+        name: 'Bench Press',
+        type: 'Compound' as const,
+        sets: [
+          { set: 1, reps: 10, weight: 60, rpe: 6, completed: true },
+          { set: 2, reps: 10, weight: 65, rpe: 7, completed: true },
+          { set: 3, reps: 8, weight: 70, rpe: 8, completed: true },
+          { set: 4, reps: 6, weight: 75, rpe: 9, completed: false }
+        ]
+      },
+      {
+        id: 3,
+        name: 'Bicep Curl',
+        type: 'Isolation' as const,
+        sets: [
+          { set: 1, reps: 12, weight: 12, rpe: 6, completed: true },
+          { set: 2, reps: 12, weight: 14, rpe: 7, completed: true },
+          { set: 3, reps: 10, weight: 16, rpe: 8, completed: false }
+        ],
+        note: 'ห้ามโยกตัว ควบคุมความเร็ว'
+      }
+    ]
   },
   {
     id: 2,
     date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     time: '10:00',
     duration: 45,
-    title: 'ไม่ระบุ',
+    title: 'Cardio Session',
     trainer: 'โค้ชมิกกี้',
     trainerPhone: '082-345-6789',
-    location: 'ห้องผลงานกีฬา',
-    status: 'pending'
+    location: 'ห้องคาร์ดิโอ',
+    status: 'pending',
+    exercises: [
+      {
+        id: 4,
+        name: 'Treadmill Running',
+        type: 'Cardio' as const,
+        sets: [
+          { set: 1, reps: 10, weight: 0, rpe: 5, completed: false },
+          { set: 2, reps: 10, weight: 0, rpe: 7, completed: false },
+          { set: 3, reps: 5, weight: 0, rpe: 8, completed: false }
+        ],
+        note: 'Interval: 1 นาทีวิ่งเร็ว, 2 นาทีเดินเบา'
+      },
+      {
+        id: 5,
+        name: 'Cycling',
+        type: 'Cardio' as const,
+        sets: [
+          { set: 1, reps: 15, weight: 0, rpe: 6, completed: false },
+          { set: 2, reps: 15, weight: 0, rpe: 7, completed: false }
+        ],
+        note: 'รักษาอัตราการเต้นของหัวใจที่ 140-150 bpm'
+      }
+    ]
   },
   {
     id: 3,
@@ -43,7 +101,28 @@ const demoSchedules = [
     trainer: 'โค้ชอนนต์',
     trainerPhone: '081-234-5678',
     location: 'ห้องโยคะ',
-    status: 'confirmed'
+    status: 'confirmed',
+    exercises: [
+      {
+        id: 6,
+        name: 'Yoga Flow',
+        type: 'Flexibility' as const,
+        sets: [
+          { set: 1, reps: 1, weight: 0, rpe: 3, completed: false },
+          { set: 2, reps: 1, weight: 0, rpe: 4, completed: false }
+        ],
+        note: 'จังหวะการหายใจสม่ำเสมอ ไม่ดึงเกินไป'
+      },
+      {
+        id: 7,
+        name: 'Foam Rolling',
+        type: 'Flexibility' as const,
+        sets: [
+          { set: 1, reps: 5, weight: 0, rpe: 5, completed: false }
+        ],
+        note: 'โฟกัสที่กล้าม IT Band และ Hamstrings'
+      }
+    ]
   },
   {
     id: 4,
@@ -54,7 +133,31 @@ const demoSchedules = [
     trainer: 'โค้ชจิม',
     trainerPhone: '083-456-7890',
     location: 'ห้องฟิตเนส B',
-    status: 'confirmed'
+    status: 'confirmed',
+    exercises: [
+      {
+        id: 8,
+        name: 'Kettlebell Swing',
+        type: 'Compound' as const,
+        sets: [
+          { set: 1, reps: 15, weight: 16, rpe: 6, completed: false },
+          { set: 2, reps: 15, weight: 16, rpe: 7, completed: false },
+          { set: 3, reps: 15, weight: 20, rpe: 8, completed: false }
+        ],
+        note: 'ใช้กำลังจากสะโพก ไม่ใช่แขน'
+      },
+      {
+        id: 9,
+        name: 'Box Jump',
+        type: 'Compound' as const,
+        sets: [
+          { set: 1, reps: 10, weight: 0, rpe: 6, completed: false },
+          { set: 2, reps: 10, weight: 0, rpe: 7, completed: false },
+          { set: 3, reps: 8, weight: 0, rpe: 8, completed: false }
+        ],
+        note: 'ลงอย่างนุ่มนวล ระวังเข่า'
+      }
+    ]
   }
 ];
 

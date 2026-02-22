@@ -1,7 +1,11 @@
 
   # Client Dashboard
-นี้คือเว็บไซต์ฝั่งลูกเทรนของระบบบริหารจัดการและติดตามการฝึกของลูกเทรนสำหรับเทรนเนอร์
- โดยลูกเทรนสามารถดูข้อมูลได้ดังนี้:                                                                                                                                                                                 
-     สามารถดูตารางนัดหมายการฝึกของตนเองกับเทรนเนอร์ได้                                              
-     สามารถดูกราฟที่แสดงความก้าวหน้าและประวัติการฝึกซ้อมย้อนหลังของตนเองได้
-	   สามารถดูสรุปผลการฝึก จากเทรนเนอร์ในแต่ละวันได้
+
+  This is a code bundle for Client Dashboard. The original project is available at https://www.figma.com/design/0oCnTGlKwCXHPLYK47TOLx/Client-Dashboard.
+
+  ## Running the code
+
+  Run `npm i` to install the dependencies.
+
+  Run `npm run dev` to start the development server.
+  

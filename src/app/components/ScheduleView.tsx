@@ -1,9 +1,29 @@
 import React from 'react';
-import { Calendar, Clock, MapPin, User, Dumbbell } from 'lucide-react';
-import { format, parseISO, addDays, isToday, isTomorrow } from 'date-fns';
+import { Calendar, Clock, MapPin, User, CheckCircle, Clock3, XCircle, Dumbbell, Phone, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { format, parseISO, isToday, isTomorrow, isPast, addDays } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card';
 import { Badge } from './ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Button } from './ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+
+interface ExerciseSet {
+  set: number;
+  reps: number;
+  weight: number;
+  rpe: number;
+  completed: boolean;
+}
+
+interface Exercise {
+  id: number;
+  name: string;
+  type: 'Compound' | 'Isolation' | 'Cardio' | 'Flexibility';
+  sets: ExerciseSet[];
+  note?: string;
+}
 
 interface Schedule {
   id: number;
@@ -15,6 +35,7 @@ interface Schedule {
   trainerPhone: string;
   location: string;
   status: string;
+  exercises?: Exercise[];
 }
 
 interface ScheduleViewProps {
@@ -22,7 +43,7 @@ interface ScheduleViewProps {
 }
 
 // ฟังก์ชันสร้างปฏิทิน 7 วันข้างหน้า
-const generateCalendarDays = (schedules: any[]) => {
+const generateCalendarDays = (schedules: Schedule[]) => {
   const days = [];
   for (let i = 0; i < 7; i++) {
     const date = addDays(new Date(), i);
@@ -32,191 +53,417 @@ const generateCalendarDays = (schedules: any[]) => {
     days.push({
       date: date,
       dateStr: dateStr,
-      dayName: format(date, 'EEEE', { locale: th }),
+      dayName: format(date, 'EEE', { locale: th }), // ย่อให้สั้น
       dayNumber: format(date, 'd'),
       month: format(date, 'MMM', { locale: th }),
       isToday: isToday(date),
-      isTomorrow: isTomorrow(date),
       sessions: sessionsOnDay,
-      hasWorkout: sessionsOnDay.length > 0
+      hasWorkout: sessionsOnDay.length > 0,
+      sessionCount: sessionsOnDay.length
     });
   }
   return days;
 };
 
-export function ScheduleView({ schedules }: ScheduleViewProps) {
-  const calendarDays = generateCalendarDays(schedules);
-  const upcomingSessions = schedules.filter(s => {
-    const sessionDate = parseISO(s.date);
-    return sessionDate > new Date() && sessionDate <= addDays(new Date(), 7);
-  });
+// ฟังก์ชันแปลงวันที่เป็นภาษาไทย
+const formatThaiDate = (dateString: string) => {
+  const date = parseISO(dateString);
+  
+  if (isToday(date)) {
+    return 'วันนี้';
+  } else if (isTomorrow(date)) {
+    return 'พรุ่งนี้';
+  }
+  
+  return format(date, 'd MMM yyyy', { locale: th });
+};
 
-  // Format date to Thai format
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const thaiMonths = [
-      'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
-      'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
-    ];
-    const day = date.getDate();
-    const month = thaiMonths[date.getMonth()];
-    return `วัน${date.toLocaleDateString('th-TH', { weekday: 'long' }).replace('วัน', '')}ที่ ${day} ${month}`;
+// Component สำหรับแสดง Status Badge
+const StatusBadge = ({ status }: { status: string }) => {
+  const statusConfig: Record<string, { label: string; variant: string; icon: React.ReactNode }> = {
+    confirmed: {
+      label: 'ยืนยันแล้ว',
+      variant: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+      icon: <CheckCircle className="w-3 h-3" />
+    },
+    pending: {
+      label: 'รอยืนยัน',
+      variant: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400',
+      icon: <Clock3 className="w-3 h-3" />
+    },
+    cancelled: {
+      label: 'ยกเลิก',
+      variant: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+      icon: <XCircle className="w-3 h-3" />
+    },
+    completed: {
+      label: 'เสร็จสิ้น',
+      variant: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400',
+      icon: <CheckCircle className="w-3 h-3" />
+    }
   };
 
-  return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">ตารางนัดหมายการฝึก</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">รายการกำหนดการที่กำลังจะมาถึง</p>
-      </div>
+  const config = statusConfig[status] || statusConfig.pending;
 
-      {/* ปฏิทินกำหนดการ 7 วันข้างหน้า */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-            <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-            ปฏิทินกำหนดการ 7 วันข้างหน้า
-          </CardTitle>
-          <CardDescription className="text-xs sm:text-sm">กำหนดการฝึกและนัดหมายของคุณ</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Mobile: Horizontal Scroll | Desktop: Grid */}
-          <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0">
-            <div className="grid grid-cols-7 gap-2 min-w-[560px] sm:min-w-0">
-              {calendarDays.map((day, idx) => (
-                <div
-                  key={idx}
-                  className={`p-2 sm:p-3 rounded-lg border text-center transition-all ${
-                    day.isToday 
-                      ? 'bg-primary text-primary-foreground border-primary shadow-md' 
-                      : day.hasWorkout
-                      ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900'
-                      : 'bg-background border-border hover:bg-accent/50'
-                  }`}
-                >
-                  <p className={`text-[10px] sm:text-xs font-medium ${
-                    day.isToday ? 'text-primary-foreground' : 'text-muted-foreground'
-                  }`}>
-                    {day.dayName.slice(0, 3)}
-                  </p>
-                  <p className={`text-xl sm:text-2xl font-bold mt-0.5 sm:mt-1 ${
-                    day.isToday ? 'text-primary-foreground' : ''
-                  }`}>
-                    {day.dayNumber}
-                  </p>
-                  <p className={`text-[10px] sm:text-xs ${
-                    day.isToday ? 'text-primary-foreground/80' : 'text-muted-foreground'
-                  }`}>
-                    {day.month}
-                  </p>
-                  
-                  {day.hasWorkout && (
-                    <div className="mt-1 sm:mt-2">
-                      <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mx-auto ${
-                        day.isToday ? 'bg-primary-foreground' : 'bg-primary'
-                      }`}></div>
-                    </div>
+  return (
+    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.variant}`}>
+      {config.icon}
+      {config.label}
+    </div>
+  );
+};
+
+// Component สำหรับแสดง Schedule Card
+const ScheduleCard = ({ schedule, onClick }: { schedule: Schedule; onClick?: () => void }) => {
+  return (
+    <Card 
+      className="hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-start gap-4">
+          {/* Trainer Avatar */}
+          <div className="flex-shrink-0">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#002140] to-[#003d75] rounded-full flex items-center justify-center shadow-md">
+              <User className="w-6 h-6 text-white" />
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1 min-w-0">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <div>
+                <h3 className="font-semibold text-foreground">{schedule.trainer}</h3>
+                <p className="text-sm text-muted-foreground">{schedule.title}</p>
+              </div>
+              <StatusBadge status={schedule.status} />
+            </div>
+
+            {/* Details */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="w-4 h-4 flex-shrink-0" />
+                <span>{formatThaiDate(schedule.date)}</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Clock className="w-4 h-4 flex-shrink-0" />
+                <span>{schedule.time} ({schedule.duration} นาที)</span>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin className="w-4 h-4 flex-shrink-0" />
+                <span>{schedule.location}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Component สำหรับแสดงแต่ละท่าออกกำลังกาย
+const ExerciseItem = ({ exercise, defaultOpen = false }: { exercise: Exercise; defaultOpen?: boolean }) => {
+  const [isOpen, setIsOpen] = React.useState(defaultOpen);
+  const completedSets = exercise.sets.filter(s => s.completed).length;
+  const totalSets = exercise.sets.length;
+
+  return (
+    <div className="border rounded-lg">
+      {/* Exercise Header */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-3 hover:bg-accent/50 transition-colors rounded-t-lg"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
+            <span className="text-sm text-muted-foreground">○</span>
+          </div>
+          <div className="text-left">
+            <div className="flex items-center gap-2">
+              <span className="font-medium text-sm">{exercise.name}</span>
+              <Badge 
+                variant="secondary" 
+                className="text-xs"
+              >
+                {exercise.type}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">{totalSets} เซต</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {isOpen ? (
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
+        </div>
+      </button>
+
+      {/* Exercise Sets Table */}
+      {isOpen && (
+        <div className="border-t">
+          {/* Table Header */}
+          <div className="grid grid-cols-[60px_80px_110px_80px_50px] gap-2 px-3 py-2 bg-muted/50 text-xs font-medium text-muted-foreground">
+            <div>Set</div>
+            <div>Reps</div>
+            <div>น้ำหนัก (kg)</div>
+            <div>RPE</div>
+            <div className="text-center">✓</div>
+          </div>
+
+          {/* Table Rows */}
+          {exercise.sets.map((set) => (
+            <div
+              key={set.set}
+              className="grid grid-cols-[60px_80px_110px_80px_50px] gap-2 px-3 py-3 border-t text-sm items-center"
+            >
+              <div className="text-muted-foreground">{set.set}</div>
+              <div>{set.reps}</div>
+              <div>{set.weight}</div>
+              <div>{set.rpe}</div>
+              <div className="flex justify-center">
+                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                  set.completed 
+                    ? 'bg-[#002140] border-[#002140]' 
+                    : 'border-muted-foreground'
+                }`}>
+                  {set.completed && (
+                    <CheckCircle className="w-3 h-3 text-white" />
                   )}
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
+          ))}
 
-          {/* รายการเซสชันที่กำลังจะมา */}
-          {upcomingSessions.length > 0 && (
-            <div className="mt-6 space-y-3">
-              <h4 className="font-semibold text-sm">เซสชันที่กำลังจะมา</h4>
-              {upcomingSessions.slice(0, 3).map((session) => (
-                <div
-                  key={session.id}
-                  className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary/10 p-2 rounded-lg">
-                      <Dumbbell className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-sm">{session.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(parseISO(session.date), 'dd MMM', { locale: th })} • {session.time} น. ({session.duration} นาที)
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {session.trainer}
-                  </Badge>
-                </div>
-              ))}
+          {/* Note */}
+          {exercise.note && (
+            <div className="px-3 py-2 border-t bg-muted/30">
+              <p className="text-xs text-muted-foreground">
+                โน้ต: {exercise.note}
+              </p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      )}
+    </div>
+  );
+};
 
-      {/* Schedule List */}
-      <div className="space-y-3 sm:space-y-4">
-        {schedules.map((schedule) => (
-          <div
-            key={schedule.id}
-            className="bg-card border border-border rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow"
-          >
-            <div className="flex flex-col sm:flex-row items-start gap-4">
-              {/* Trainer Avatar */}
-              <div className="flex-shrink-0">
-                <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-              </div>
-
-              {/* Main Content */}
-              <div className="flex-1 min-w-0">
-                {/* Trainer Info */}
-                <div className="flex items-center gap-3 mb-1">
-                  <h3 className="text-foreground">{schedule.trainer}</h3>
-                  <span className={`px-3 py-1 rounded-full text-xs ${
-                    schedule.status === 'confirmed' 
-                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' 
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-400'
-                  }`}>
-                    {schedule.status === 'confirmed' ? 'ยืนยันแล้ว' : 'รอยืนยัน'}
-                  </span>
-                </div>
-                <p className="text-muted-foreground text-sm mb-4">{schedule.trainerPhone}</p>
-
-                {/* Schedule Details */}
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Date & Time */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="w-4 h-4" />
-                      <span className="text-sm">{formatDate(schedule.date)}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Clock className="w-4 h-4" />
-                      <span className="text-sm">{schedule.time} ({schedule.duration} นาที)</span>
-                    </div>
-                  </div>
-
-                  {/* Location & Type */}
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <MapPin className="w-4 h-4" />
-                      <span className="text-sm">{schedule.location}</span>
-                    </div>
-                    {schedule.title !== 'ไม่ระบุ' && (
-                      <div className="flex items-start gap-2">
-                        <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs inline-block">
-                          {schedule.title}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
+// Component สำหรับ Empty State
+const EmptyState = ({ message }: { message: string }) => {
+  return (
+    <div className="text-center py-12">
+      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+        <Calendar className="w-8 h-8 text-muted-foreground" />
       </div>
+      <p className="text-muted-foreground">{message}</p>
+    </div>
+  );
+};
+
+export function ScheduleView({ schedules }: ScheduleViewProps) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // State สำหรับเก็บวันที่เลือก
+  const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
+  
+  // State สำหรับเก็บเซสชันที่เลือกเพื่อดูรายละเอียด
+  const [selectedSchedule, setSelectedSchedule] = React.useState<Schedule | null>(null);
+
+  // สร้างปฏิทิน 7 วัน
+  const calendarDays = generateCalendarDays(schedules);
+
+  // แยก schedules ตาม tab
+  const todaySchedules = schedules.filter(s => {
+    const scheduleDate = parseISO(s.date);
+    scheduleDate.setHours(0, 0, 0, 0);
+    return scheduleDate.getTime() === today.getTime();
+  });
+
+  const upcomingSchedules = schedules.filter(s => {
+    const scheduleDate = parseISO(s.date);
+    scheduleDate.setHours(0, 0, 0, 0);
+    return scheduleDate.getTime() > today.getTime();
+  }).sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
+
+  const pastSchedules = schedules.filter(s => {
+    const scheduleDate = parseISO(s.date);
+    scheduleDate.setHours(0, 0, 0, 0);
+    return scheduleDate.getTime() < today.getTime();
+  }).sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
+
+  // ฟังก์ชันเมื่อคลิกวันในปฏิทิน
+  const handleDateClick = (dateStr: string) => {
+    setSelectedDate(dateStr);
+  };
+
+  // เซสชันของวันที่เลือก
+  const selectedDaySchedules = selectedDate 
+    ? schedules.filter(s => s.date === selectedDate)
+    : [];
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground mb-2">ตารางนัดหมาย</h1>
+        <p className="text-muted-foreground">รายการนัดหมายการฝึกของคุณ</p>
+      </div>
+
+      {/* Tabs */}
+      <Tabs defaultValue="today" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="today" className="relative">
+            วันนี้
+            {todaySchedules.length > 0 && (
+              <Badge variant="destructive" className="ml-2 px-1.5 py-0 h-5 min-w-5 text-xs">
+                {todaySchedules.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="upcoming" className="relative">
+            กำลังจะมา
+            {upcomingSchedules.length > 0 && (
+              <Badge variant="secondary" className="ml-2 px-1.5 py-0 h-5 min-w-5 text-xs">
+                {upcomingSchedules.length}
+              </Badge>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="past">ผ่านมาแล้ว</TabsTrigger>
+        </TabsList>
+
+        {/* Tab: Today */}
+        <TabsContent value="today" className="space-y-3 mt-6">
+          {todaySchedules.length > 0 ? (
+            todaySchedules.map((schedule) => (
+              <ScheduleCard 
+                key={schedule.id} 
+                schedule={schedule} 
+                onClick={() => setSelectedSchedule(schedule)}
+              />
+            ))
+          ) : (
+            <EmptyState message="ไม่มีนัดหมายวันนี้" />
+          )}
+        </TabsContent>
+
+        {/* Tab: Upcoming */}
+        <TabsContent value="upcoming" className="space-y-3 mt-6">
+          {upcomingSchedules.length > 0 ? (
+            upcomingSchedules.map((schedule) => (
+              <ScheduleCard 
+                key={schedule.id} 
+                schedule={schedule} 
+                onClick={() => setSelectedSchedule(schedule)}
+              />
+            ))
+          ) : (
+            <EmptyState message="ไม่มีนัดหมายที่กำลังจะมา" />
+          )}
+        </TabsContent>
+
+        {/* Tab: Past */}
+        <TabsContent value="past" className="space-y-3 mt-6">
+          {pastSchedules.length > 0 ? (
+            pastSchedules.map((schedule) => (
+              <ScheduleCard 
+                key={schedule.id} 
+                schedule={schedule} 
+                onClick={() => setSelectedSchedule(schedule)}
+              />
+            ))
+          ) : (
+            <EmptyState message="ไม่มีประวัตินัดหมาย" />
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Dialog สำหรับแสดงรายละเอียดเต็มรูปแบบ */}
+      <Dialog open={selectedSchedule !== null} onOpenChange={(open) => !open && setSelectedSchedule(null)}>
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] flex flex-col">
+          {selectedSchedule && (
+            <>
+              <DialogHeader className="flex-shrink-0">
+                <DialogTitle className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-[#002140] to-[#003d75] rounded-full flex items-center justify-center shadow-md">
+                    <User className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">{selectedSchedule.trainer}</h3>
+                    <p className="text-sm text-muted-foreground font-normal">{selectedSchedule.title}</p>
+                  </div>
+                  <StatusBadge status={selectedSchedule.status} />
+                </DialogTitle>
+                <DialogDescription className="sr-only">
+                  รายละเอียดนัดหมายการฝึก
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-4 py-4 overflow-y-auto flex-1 pr-2">
+                {/* รายละเอียดย่อย - Compact Layout */}
+                <div className="text-xs text-muted-foreground space-y-1.5 pb-3 border-b">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-[#FF6B35]" />
+                    <span>วันที่</span>
+                    <span className="font-medium text-foreground ml-auto">{formatThaiDate(selectedSchedule.date)}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-[#FF6B35]" />
+                    <span>เวลา</span>
+                    <span className="font-medium text-foreground ml-auto">{selectedSchedule.time} ({selectedSchedule.duration} นาที)</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-3.5 h-3.5 text-[#FF6B35]" />
+                    <span>สถานที่</span>
+                    <span className="font-medium text-foreground ml-auto">{selectedSchedule.location}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-3.5 h-3.5 text-[#002140]" />
+                    <span>เบอร์ติดต่อเทรนเนอร์</span>
+                    <span className="font-medium text-foreground ml-auto">{selectedSchedule.trainerPhone}</span>
+                  </div>
+                </div>
+
+                {/* รายการออกกำลังกาย - เนื้อหาหลัก */}
+                {selectedSchedule.exercises && selectedSchedule.exercises.length > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <Dumbbell className="w-5 h-5 text-[#002140]" />
+                      <h4 className="font-semibold">
+                        ท่าออกกำลังกาย ({selectedSchedule.exercises.filter(e => e.sets.every(s => s.completed)).length}/{selectedSchedule.exercises.length})
+                      </h4>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {selectedSchedule.exercises.map((exercise, idx) => (
+                        <ExerciseItem key={exercise.id} exercise={exercise} defaultOpen={idx < 2} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 flex-shrink-0 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setSelectedSchedule(null)}
+                >
+                  ปิด
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
